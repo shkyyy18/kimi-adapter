@@ -20,6 +20,7 @@ API Error: 400 Invalid request Error
 - 🔒 **Key 不经手**：请求头原样透传，Adapter 不读取、不存储 Kimi API Key
 - 📎 **附件自动转换**：代码、Markdown、文本类附件一键转 `text` 块
 - 📄 **PDF 支持（可选）**：安装 `pypdf` 后，可提取 PDF 文本内容
+- 🔁 **缓冲重试（单文件版）**：完整收完上游响应、校验流完整后才发回客户端；中途断流自动重试最多 3 次，前端不会再看到半截 JSON（`Unterminated string`）
 - 🖥️ **VS Code 随启随停**：提供任务配置，打开 VS Code 自动启动，关闭后自动退出
 - ⚙️ **零依赖/轻依赖**：单文件 Python 脚本，也可作为 pip 包安装
 - 🐳 **Docker 可选**：提供容器化运行方式
@@ -30,9 +31,9 @@ API Error: 400 Invalid request Error
 ### 方式一：直接运行脚本（最简单）
 
 ```bash
-git clone https://github.com/njshk/kimi-adapter.git
+git clone https://github.com/shkyyy18/kimi-adapter.git
 cd kimi-adapter
-python kimi_adapter.py
+python kimi-adapter.py
 ```
 
 默认监听 `http://127.0.0.1:18231`。
