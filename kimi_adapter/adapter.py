@@ -41,7 +41,10 @@ def convert_documents(obj: Any) -> int:
         {"type": "document", "source": {"type": "text", "data": "..."}}
 
     It may also send PDFs as:
-        {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": "..."}}
+        {
+            "type": "document",
+            "source": {"type": "base64", "media_type": "application/pdf", "data": "..."},
+        }
 
     Kimi's Anthropic-compatible gateway does not accept the 'document' block.
     This converts text attachments directly and extracts text from PDFs before

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -90,7 +90,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--config",
         "-c",
-        help="Path to config file (YAML or JSON). Defaults to config.yaml or KIMI_ADAPTER_CONFIG env var.",
+        help="Path to config file (YAML or JSON)."
+        " Defaults to config.yaml or KIMI_ADAPTER_CONFIG env var.",
     )
     parser.add_argument(
         "--host",
