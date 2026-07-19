@@ -1,6 +1,6 @@
 # Kimi Adapter for Claude Code
 
-让 [Claude Code](https://claude.ai/code) 的 VS Code 扩展顺畅使用 **Kimi** 后端的本地轻量代理。
+让 [Claude Code](https://claude.ai/code) 的 VS Code 扩展顺畅使用 **Kimi** 后端的本地轻量代理——一条命令启动，代码/文本/PDF 附件即传即用，API Key 不经手。
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -25,6 +25,91 @@ API Error: 400 Invalid request Error
 - ⚙️ **零依赖/轻依赖**：单文件 Python 脚本，也可作为 pip 包安装
 - 🐳 **Docker 可选**：提供容器化运行方式
 - 🧪 **带基础测试**：核心转换逻辑已覆盖
+
+## 运行效果（真实输出）
+
+以下输出均为在 Windows + Python 3.14 下实际运行捕获。
+
+启动 Adapter（默认监听 `127.0.0.1:18231`）：
+
+```console
+$ python -m kimi_adapter.cli --no-watchdog
+2026-07-20 07:33:24,093 [INFO] Kimi Adapter listening on http://127.0.0.1:18231 -> api.kimi.com/coding
+```
+
+查看全部命令行参数：
+
+```console
+$ python -m kimi_adapter.cli --help
+usage: kimi-adapter [-h] [--config CONFIG] [--host HOST] [--port PORT]
+                    [--upstream-host UPSTREAM_HOST]
+                    [--upstream-prefix UPSTREAM_PREFIX] [--no-watchdog]
+                    [--log-level {DEBUG,INFO,WARNING,ERROR}] [--silent]
+
+Local proxy adapter for using Claude Code with Kimi backends.
+
+options:
+  -h, --help            show this help message and exit
+  --config, -c CONFIG   Path to config file (YAML or JSON). Defaults to
+                        config.yaml or KIMI_ADAPTER_CONFIG env var.
+  --host HOST           Listen host (overrides config file).
+  --port PORT           Listen port (overrides config file).
+  --upstream-host UPSTREAM_HOST
+                        Upstream API host (overrides config file).
+  --upstream-prefix UPSTREAM_PREFIX
+                        Upstream URL prefix (overrides config file).
+  --no-watchdog         Disable VS Code watchdog even if config has it
+                        enabled.
+  --log-level {DEBUG,INFO,WARNING,ERROR}
+                        Logging level.
+  --silent              Suppress access logs.
+```
+
+附件块转换演示（`document` 块 → Kimi 可处理的 `text` 块），以下代码可直接运行：
+
+```python
+import json
+from kimi_adapter.adapter import convert_documents
+
+payload = {
+    "model": "kimi-for-coding",
+    "messages": [
+        {"role": "user", "content": [
+            {"type": "document", "source": {"type": "text", "data": "def hello():\n    print('hi')"}},
+            {"type": "text", "text": "解释这段代码"},
+        ]}
+    ],
+}
+print(json.dumps(payload["messages"][0]["content"][0], ensure_ascii=False, indent=2))
+n = convert_documents(payload)
+print(f"convert_documents() 转换了 {n} 个块")
+print(json.dumps(payload["messages"][0]["content"][0], ensure_ascii=False, indent=2))
+```
+
+实际输出：
+
+```
+{
+  "type": "document",
+  "source": {
+    "type": "text",
+    "data": "def hello():\n    print('hi')"
+  }
+}
+convert_documents() 转换了 1 个块
+{
+  "type": "text",
+  "text": "\n\n<附件内容>\ndef hello():\n    print('hi')\n</附件内容>\n\n"
+}
+```
+
+运行测试套件：
+
+```console
+$ python -m pytest -q
+......                                                                   [100%]
+6 passed in 0.04s
+```
 
 ## 快速开始
 
