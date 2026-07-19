@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- PDF attachment support: extract text from base64-encoded PDFs when `pypdf` is installed
+- Optional `[pdf]` extra in `pyproject.toml` for easy dependency installation
+
 ## [0.1.0] - 2026-07-19
 
 ### Added

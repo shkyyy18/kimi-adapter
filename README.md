@@ -19,6 +19,7 @@ API Error: 400 Invalid request Error
 
 - 🔒 **Key 不经手**：请求头原样透传，Adapter 不读取、不存储 Kimi API Key
 - 📎 **附件自动转换**：代码、Markdown、文本类附件一键转 `text` 块
+- 📄 **PDF 支持（可选）**：安装 `pypdf` 后，可提取 PDF 文本内容
 - 🖥️ **VS Code 随启随停**：提供任务配置，打开 VS Code 自动启动，关闭后自动退出
 - ⚙️ **零依赖/轻依赖**：单文件 Python 脚本，也可作为 pip 包安装
 - 🐳 **Docker 可选**：提供容器化运行方式
@@ -41,6 +42,12 @@ python kimi_adapter.py
 ```bash
 pip install -e .
 kimi-adapter
+```
+
+如需 PDF 附件支持：
+
+```bash
+pip install -e ".[pdf]"
 ```
 
 ### 方式三：Docker
@@ -91,7 +98,8 @@ pytest
 
 ## 限制
 
-- 目前仅支持 `source.type=text` 的附件转换；PDF、图片等 base64 二进制附件无法转换
+- 目前支持 `source.type=text` 的附件转换和 `source.type=base64` 的 PDF 文本提取（需安装 `pypdf`）
+- 图片等其他 base64 二进制附件无法转换
 - Adapter 不运行时，指向它的请求会失败，请确保 Adapter 已启动
 
 ## 协议

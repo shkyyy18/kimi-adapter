@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import base64
 import http.client
+import io
 import json
 import logging
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -11,15 +13,39 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
+def extract_pdf_text(b64data: str) -> str:
+    """Extract plain text from a base64-encoded PDF.
+
+    Requires ``pypdf``. If it is not installed or parsing fails, return a
+    helpful placeholder message instead of raising.
+    """
+    try:
+        from pypdf import PdfReader
+
+        reader = PdfReader(io.BytesIO(base64.b64decode(b64data)))
+        parts = []
+        for i, page in enumerate(reader.pages, 1):
+            parts.append(f"--- Page {i} ---\n" + (page.extract_text() or ""))
+        text = "\n".join(parts).strip()
+        return text or "[PDF parsed but no text extracted (likely a scanned/image PDF)]"
+    except ImportError:
+        return "[pypdf is not installed: pip install --user pypdf]"
+    except Exception as exc:  # noqa: BLE001
+        return f"[PDF parsing failed: {exc!r}]"
+
+
 def convert_documents(obj: Any) -> int:
     """Recursively convert Claude 'document' content blocks to plain text blocks.
 
     Claude Code sends text attachments as:
         {"type": "document", "source": {"type": "text", "data": "..."}}
 
+    It may also send PDFs as:
+        {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": "..."}}
+
     Kimi's Anthropic-compatible gateway does not accept the 'document' block.
-    This converts it to:
-        {"type": "text", "text": "\\n\\n<附件内容>\\n...\\n</附件内容>\\n\\n"}
+    This converts text attachments directly and extracts text from PDFs before
+    converting them.
 
     Returns the number of blocks converted.
     """
@@ -31,6 +57,19 @@ def convert_documents(obj: Any) -> int:
                 obj.clear()
                 obj["type"] = "text"
                 obj["text"] = "\n\n<附件内容>\n" + src["data"] + "\n</附件内容>\n\n"
+                return 1
+            if (
+                src.get("type") == "base64"
+                and src.get("media_type") == "application/pdf"
+                and "data" in src
+            ):
+                obj.clear()
+                obj["type"] = "text"
+                obj["text"] = (
+                    "\n\n<附件内容(PDF已提取为文本)>\n"
+                    + extract_pdf_text(src["data"])
+                    + "\n</附件内容>\n\n"
+                )
                 return 1
         for value in obj.values():
             changed += convert_documents(value)

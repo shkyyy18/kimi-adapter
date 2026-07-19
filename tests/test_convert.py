@@ -74,6 +74,39 @@ def test_no_documents():
     assert n == 0
 
 
+def test_pdf_base64_without_pypdf():
+    """When pypdf is unavailable the adapter should degrade gracefully."""
+    import sys
+
+    real_modules = sys.modules.copy()
+    sys.modules["pypdf"] = None  # simulate missing import
+    try:
+        payload = {
+            "messages": [
+                {
+                    "content": [
+                        {
+                            "type": "document",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "application/pdf",
+                                "data": "JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovQ29udGVudHMgNCAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL0xlbmd0aCA0NAo+PgpzdHJlYW0KQlQKL0YxIDEyIFRmCjcyIDcyMCBUZAooSGVsbG8sIFBERikgVGoKRVQKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjw8Ci9UeXBlIC9Gb250Ci9TdWJ0eXBlIC9UeXBlMQovQmFzZUZvbnQgL0hlbHZldGljYQovRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZwo+PgplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAowMDAwMDAwMjA3IDAwMDAwIG4gCjAwMDAwMDAzMDEgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSA2Ci9Sb290IDEgMCBSCj4+CnN0YXJ0eHJlZgozODEKJSVFT0Y=",
+                            },
+                        }
+                    ]
+                }
+            ]
+        }
+        n = convert_documents(payload)
+        assert n == 1
+        text = payload["messages"][0]["content"][0]["text"]
+        assert text.startswith("\n\n<附件内容(PDF已提取为文本)")
+        assert "pypdf is not installed" in text or "Hello, PDF" in text
+    finally:
+        sys.modules.clear()
+        sys.modules.update(real_modules)
+
+
 def test_json_roundtrip_stability():
     """Ensure converted payload is still valid JSON after serialization."""
     payload = {

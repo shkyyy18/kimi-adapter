@@ -20,8 +20,27 @@ UPSTREAM_PREFIX = "/coding"
 LISTEN_PORT = 18231
 
 
+def extract_pdf_text(b64data):
+    """把 base64 编码的 PDF 提取为纯文本（需要 pypdf，未安装或解析失败时返回说明文字）"""
+    try:
+        import base64
+        import io
+        from pypdf import PdfReader
+        reader = PdfReader(io.BytesIO(base64.b64decode(b64data)))
+        parts = []
+        for i, page in enumerate(reader.pages, 1):
+            parts.append(f"--- 第 {i} 页 ---\n" + (page.extract_text() or ""))
+        text = "\n".join(parts).strip()
+        return text or "[PDF 解析成功但未提取到文字（可能是扫描件/图片型 PDF，本适配器无法识别）]"
+    except ImportError:
+        return "[本机未安装 pypdf，无法解析 PDF：pip install --user pypdf]"
+    except Exception as e:
+        return f"[PDF 解析失败: {e!r}]"
+
+
 def convert_documents(obj):
-    """递归把 {type: document, source: {type: text, ...}} 转成 {type: text, text: ...}"""
+    """递归把 {type: document, source: {...}} 转成 {type: text, text: ...}
+    支持 source.type=text（直接转）和 source.type=base64 的 PDF（本地提取文字后转）"""
     changed = 0
     if isinstance(obj, dict):
         if obj.get("type") == "document" and isinstance(obj.get("source"), dict):
@@ -30,6 +49,11 @@ def convert_documents(obj):
                 obj.clear()
                 obj["type"] = "text"
                 obj["text"] = "\n\n<附件内容>\n" + src["data"] + "\n</附件内容>\n\n"
+                return 1
+            if src.get("type") == "base64" and src.get("media_type") == "application/pdf" and "data" in src:
+                obj.clear()
+                obj["type"] = "text"
+                obj["text"] = "\n\n<附件内容(PDF已提取为文本)>\n" + extract_pdf_text(src["data"]) + "\n</附件内容>\n\n"
                 return 1
         for v in obj.values():
             changed += convert_documents(v)
