@@ -9,7 +9,7 @@ description = "A local proxy adapter that lets Claude Code use Kimi backends wit
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "njshk"}
+    {name = "shkyyy18"}
 ]
 requires-python = ">=3.8"
 classifiers = [
@@ -45,9 +45,9 @@ dev = [
 kimi-adapter = "kimi_adapter.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/njshk/kimi-adapter"
-Repository = "https://github.com/njshk/kimi-adapter"
-Issues = "https://github.com/njshk/kimi-adapter/issues"
+Homepage = "https://github.com/shkyyy18/kimi-adapter"
+Repository = "https://github.com/shkyyy18/kimi-adapter"
+Issues = "https://github.com/shkyyy18/kimi-adapter/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
