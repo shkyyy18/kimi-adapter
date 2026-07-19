@@ -1,0 +1,8 @@
+listen_host: "127.0.0.1"
+listen_port: 18231
+upstream_host: "api.kimi.com"
+upstream_prefix: "/coding"
+upstream_scheme: "https"
+vscode_watchdog: true
+log_level: "INFO"
+silent: false

@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kimi-adapter"
+version = "0.1.0"
+description = "A local proxy adapter that lets Claude Code use Kimi backends with file attachments."
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "njshk"}
+]
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Tools",
+]
+keywords = ["claude-code", "kimi", "anthropic", "proxy", "adapter", "vscode"]
+
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+kimi-adapter = "kimi_adapter.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/njshk/kimi-adapter"
+Repository = "https://github.com/njshk/kimi-adapter"
+Issues = "https://github.com/njshk/kimi-adapter/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["kimi_adapter*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W", "I"]
+ignore = []
