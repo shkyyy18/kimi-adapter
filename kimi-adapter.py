@@ -266,9 +266,34 @@ def _vscode_watchdog():
 
 
 if __name__ == "__main__":
-    _log(
-        f"Kimi 附件适配器已启动: http://127.0.0.1:{LISTEN_PORT}"
-        f" -> {UPSTREAM_HOST}{UPSTREAM_PREFIX}"
-    )
-    _vscode_watchdog()
-    ThreadingHTTPServer(("127.0.0.1", LISTEN_PORT), Handler).serve_forever()
+    # 包（kimi_adapter/）可导入时，直接复用包入口：--help 及全部 CLI 参数行为一致
+    try:
+        from kimi_adapter.cli import main as _pkg_main
+    except ImportError:
+        _pkg_main = None
+
+    if _pkg_main is not None:
+        _pkg_main()
+    else:
+        # 纯单文件场景（脱离仓库单独分发）：无包可用，退化为本文件内置服务器。
+        # 至少响应 --help/-h，避免不解析参数、无提示地阻塞。
+        import sys
+
+        if any(a in ("-h", "--help") for a in sys.argv[1:]):
+            print(
+                "用法: python kimi-adapter.py [-h]\n"
+                "\n"
+                "Kimi 附件适配器（单文件 legacy 版）：启动后监听 "
+                f"127.0.0.1:{LISTEN_PORT}，转发到 {UPSTREAM_HOST}{UPSTREAM_PREFIX}。\n"
+                "本版本不支持命令行参数；如需 --host/--port/--config 等参数，"
+                "请使用包入口：\n"
+                "  pip install -e .\n"
+                "  python -m kimi_adapter.cli --help"
+            )
+            sys.exit(0)
+        _log(
+            f"Kimi 附件适配器已启动: http://127.0.0.1:{LISTEN_PORT}"
+            f" -> {UPSTREAM_HOST}{UPSTREAM_PREFIX}"
+        )
+        _vscode_watchdog()
+        ThreadingHTTPServer(("127.0.0.1", LISTEN_PORT), Handler).serve_forever()
